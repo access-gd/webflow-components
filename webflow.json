@@ -1,0 +1,17 @@
+{
+  "telemetry": {
+    "global": {
+      "allowTelemetry": false,
+      "lastPrompted": 1768895866253,
+      "version": "1.8.49"
+    }
+  },
+  "library": {
+    "components": [
+      "**/*.webflow.@(js|jsx|mjs|ts|tsx)"
+    ],
+    "name": "React Webflow Library",
+    "description": "A library of Webflow components built with React.",
+    "id": "tico"
+  }
+}
