@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
+import './GradientBlinds.css';
 
 const MAX_COLORS = 8;
 const hexToRGB = hex => {
@@ -35,18 +36,9 @@ const GradientBlinds = ({
   spotlightOpacity = 1,
   distortAmount = 0,
   shineDirection = 'left',
-  mixBlendMode = 'lighten'
+  mixBlendMode = 'lighten',
+  backgroundColor = '#000000'
 }) => {
-  // Handle gradientColors as JSON string or array
-  const parsedColors = typeof gradientColors === 'string' 
-    ? (() => {
-        try {
-          return JSON.parse(gradientColors);
-        } catch {
-          return ['#FF9FFC', '#5227FF'];
-        }
-      })()
-    : (gradientColors || ['#FF9FFC', '#5227FF']);
   const containerRef = useRef(null);
   const rafRef = useRef(null);
   const programRef = useRef(null);
@@ -61,6 +53,18 @@ const GradientBlinds = ({
     const container = containerRef.current;
     if (!container) return;
 
+    // Parse gradientColors if it's a string (from Webflow)
+    let colors = gradientColors;
+    if (typeof gradientColors === 'string') {
+      colors = gradientColors.split(',').map(c => c.trim()).filter(c => c);
+    }
+
+    // Ensure container has dimensions
+    const rect = container.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.warn('GradientBlinds container has no dimensions');
+    }
+
     const renderer = new Renderer({
       dpr: dpr ?? (typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1),
       alpha: true,
@@ -73,7 +77,17 @@ const GradientBlinds = ({
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.display = 'block';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
     container.appendChild(canvas);
+    
+    // Set actual pixel dimensions
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    const dprValue = (dpr ?? window.devicePixelRatio) || 1;
+    canvas.width = width * dprValue;
+    canvas.height = height * dprValue;
 
     const vertex = `
 attribute vec2 position;
@@ -198,7 +212,7 @@ void main() {
 }
 `;
 
-    const { arr: colorArr, count: colorCount } = prepStops(parsedColors);
+    const { arr: colorArr, count: colorCount } = prepStops(colors);
     const uniforms = {
       iResolution: {
         value: [gl.drawingBufferWidth, gl.drawingBufferHeight, 1]
@@ -278,27 +292,27 @@ void main() {
 
     const loop = t => {
       rafRef.current = requestAnimationFrame(loop);
-      uniforms.iTime.value = t * 0.001;
-      if (mouseDampening > 0) {
-        if (!lastTimeRef.current) lastTimeRef.current = t;
-        const dt = (t - lastTimeRef.current) / 1000;
-        lastTimeRef.current = t;
-        const tau = Math.max(1e-4, mouseDampening);
-        let factor = 1 - Math.exp(-dt / tau);
-        if (factor > 1) factor = 1;
-        const target = mouseTargetRef.current;
-        const cur = uniforms.iMouse.value;
-        cur[0] += (target[0] - cur[0]) * factor;
-        cur[1] += (target[1] - cur[1]) * factor;
-      } else {
-        lastTimeRef.current = t;
-      }
-      if (!paused && programRef.current && meshRef.current) {
-        try {
-          renderer.render({ scene: meshRef.current });
-        } catch (e) {
-          console.error(e);
+      try {
+        uniforms.iTime.value = t * 0.001;
+        if (mouseDampening > 0) {
+          if (!lastTimeRef.current) lastTimeRef.current = t;
+          const dt = (t - lastTimeRef.current) / 1000;
+          lastTimeRef.current = t;
+          const tau = Math.max(1e-4, mouseDampening);
+          let factor = 1 - Math.exp(-dt / tau);
+          if (factor > 1) factor = 1;
+          const target = mouseTargetRef.current;
+          const cur = uniforms.iMouse.value;
+          cur[0] += (target[0] - cur[0]) * factor;
+          cur[1] += (target[1] - cur[1]) * factor;
+        } else {
+          lastTimeRef.current = t;
         }
+        if (!paused && programRef.current && meshRef.current) {
+          renderer.render({ scene: meshRef.current });
+        }
+      } catch (e) {
+        console.error('GradientBlinds render error:', e);
       }
     };
     rafRef.current = requestAnimationFrame(loop);
@@ -327,7 +341,7 @@ void main() {
   }, [
     dpr,
     paused,
-    parsedColors,
+    gradientColors,
     angle,
     noise,
     blindCount,
@@ -344,11 +358,12 @@ void main() {
   return (
     <div
       ref={containerRef}
-      className={`gradient-blinds-container ${className || ''}`}
+      className={`gradient-blinds-container ${className}`}
       style={{
-        position: 'relative',
         width: '100%',
         height: '100%',
+        position: 'relative',
+        background: backgroundColor,
         overflow: 'hidden',
         ...(mixBlendMode && {
           mixBlendMode: mixBlendMode

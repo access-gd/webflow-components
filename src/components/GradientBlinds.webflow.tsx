@@ -4,17 +4,15 @@ import GradientBlinds from './GradientBlinds';
 
 export default declareComponent(GradientBlinds, {
   name: 'Gradient Blinds',
-  description: 'An interactive animated gradient with blind/stripe effects and spotlight interaction',
+  description: 'An animated gradient effect with dynamic blinds and spotlight interaction',
   group: 'Effects',
   props: {
     gradientColors: props.Text({
-      name: 'Gradient Colors (JSON)',
-      description: 'JSON array of hex colors, e.g. ["#FF9FFC", "#5227FF"]',
-      defaultValue: '["#FF9FFC", "#5227FF"]',
+      name: 'Gradient Colors',
+      defaultValue: '#FF9FFC,#5227FF',
     }),
     angle: props.Number({
       name: 'Angle',
-      description: 'Rotation angle in degrees',
       defaultValue: 0,
       min: 0,
       max: 360,
@@ -22,7 +20,6 @@ export default declareComponent(GradientBlinds, {
     }),
     noise: props.Number({
       name: 'Noise Intensity',
-      description: 'Amount of noise/grain effect',
       defaultValue: 0.3,
       min: 0,
       max: 1,
@@ -30,23 +27,20 @@ export default declareComponent(GradientBlinds, {
     }),
     blindCount: props.Number({
       name: 'Blind Count',
-      description: 'Number of stripes/blinds',
       defaultValue: 16,
       min: 1,
       max: 128,
       step: 1,
     }),
     blindMinWidth: props.Number({
-      name: 'Blind Min Width',
-      description: 'Minimum width of each blind in pixels (0 = disabled)',
+      name: 'Blind Minimum Width',
       defaultValue: 60,
       min: 0,
       max: 500,
-      step: 10,
+      step: 5,
     }),
     mouseDampening: props.Number({
       name: 'Mouse Dampening',
-      description: 'Smoothing of mouse tracking (0 = instant)',
       defaultValue: 0.15,
       min: 0,
       max: 1,
@@ -54,63 +48,49 @@ export default declareComponent(GradientBlinds, {
     }),
     mirrorGradient: props.Boolean({
       name: 'Mirror Gradient',
-      description: 'Mirror the gradient pattern',
       defaultValue: false,
     }),
     spotlightRadius: props.Number({
       name: 'Spotlight Radius',
-      description: 'Size of the spotlight effect relative to container',
       defaultValue: 0.5,
       min: 0.1,
       max: 2,
-      step: 0.1,
+      step: 0.05,
     }),
     spotlightSoftness: props.Number({
       name: 'Spotlight Softness',
-      description: 'Softness/blur of spotlight edges',
       defaultValue: 1,
-      min: 0.1,
-      max: 5,
+      min: 0.5,
+      max: 3,
       step: 0.1,
     }),
     spotlightOpacity: props.Number({
       name: 'Spotlight Opacity',
-      description: 'Intensity of the spotlight effect',
       defaultValue: 1,
       min: 0,
       max: 1,
-      step: 0.1,
+      step: 0.05,
     }),
     distortAmount: props.Number({
-      name: 'Distort Amount',
-      description: 'Amount of wave distortion',
+      name: 'Distortion Amount',
       defaultValue: 0,
       min: 0,
       max: 1,
       step: 0.05,
     }),
-    shineDirection: props.Text({
+    shineDirection: props.Variant({
       name: 'Shine Direction',
-      description: 'Direction of the shine effect: "left" or "right"',
+      options: ['left', 'right'],
       defaultValue: 'left',
     }),
-    mixBlendMode: props.Text({
-      name: 'Blend Mode',
-      description: 'CSS mix-blend-mode (e.g., "lighten", "screen", "overlay")',
+    mixBlendMode: props.Variant({
+      name: 'Mix Blend Mode',
+      options: ['lighten', 'screen', 'overlay', 'multiply', 'normal'],
       defaultValue: 'lighten',
     }),
-    paused: props.Boolean({
-      name: 'Paused',
-      description: 'Pause the animation',
-      defaultValue: false,
-    }),
-    dpr: props.Number({
-      name: 'Device Pixel Ratio',
-      description: 'Canvas DPR (leave empty for auto)',
-      defaultValue: 0,
-      min: 0,
-      max: 3,
-      step: 0.5,
+    backgroundColor: props.Text({
+      name: 'Background Color',
+      defaultValue: '#000000',
     }),
   },
 });
